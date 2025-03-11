@@ -10,11 +10,11 @@ import torchvision.transforms as transforms
 from diffusers import AutoencoderKL, DDIMScheduler
 from diffusers.utils.import_utils import is_xformers_available
 from transformers import CLIPTextModel, CLIPTokenizer
-from motionclone.models.unet import UNet3DConditionModel
-from motionclone.pipelines.pipeline import MotionClonePipeline
-from motionclone.pipelines.additional_components import customized_step, set_timesteps
-from motionclone.utils.util import load_weights
-from motionclone.utils.util import video_preprocess
+from principled_reframing.models.unet import UNet3DConditionModel
+from principled_reframing.pipelines.pipeline import PR_Pipeline
+from principled_reframing.pipelines.additional_components import customized_step, set_timesteps
+from principled_reframing.utils.util import load_weights
+from principled_reframing.utils.util import video_preprocess
 
 
 @torch.no_grad()
@@ -38,10 +38,8 @@ def main(args):
     model_config = OmegaConf.load(config.get("model_config", args.model_config))
     unet = UNet3DConditionModel.from_pretrained_2d(args.pretrained_model_path, subfolder="unet", unet_additional_kwargs=OmegaConf.to_container(model_config.unet_additional_kwargs),).to(device).to(dtype=adopted_dtype)
     
-    # ?
     if args.num_inference_steps is not None:
         config.num_inference_step = args.num_inference_steps
-    # ?
 
     controlnet = None
     # set xformers
@@ -49,7 +47,7 @@ def main(args):
         unet.enable_xformers_memory_efficient_attention()
         if controlnet is not None: controlnet.enable_xformers_memory_efficient_attention()
 
-    pipeline = MotionClonePipeline(
+    pipeline = PR_Pipeline(
         vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
         controlnet=controlnet,
         scheduler=DDIMScheduler(**OmegaConf.to_container(model_config.noise_scheduler_kwargs)),
@@ -60,7 +58,6 @@ def main(args):
     
     pipeline = load_weights(
         pipeline,
-        # motion module
         motion_module_path         = config.get("motion_module", ""),
         dreambooth_model_path      = config.get("dreambooth_path", ""),
     ).to(device)
@@ -88,7 +85,6 @@ if __name__ == "__main__":
     parser.add_argument("--inversion_save_dir",      type=str, default="inversion/")
     parser.add_argument("--examples",                type=str, default=None)
     parser.add_argument("--without-xformers", action="store_true")
-
     parser.add_argument("--num_inference_steps", type=int, default=None)
 
     args = parser.parse_args()
