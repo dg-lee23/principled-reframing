@@ -6,7 +6,12 @@ We implement *reframing* in existing **motion transfer** methods, such as **[Mot
 
 Currently, this repo supports incorporation of reframing into DMT and our own guidance-based motion transfer method. For Ctrl-x, see **[here](https://github.com/oh470102/ctrl-x-with-AnimateDiff)**. Further details and code will be released soon.
 
-After installing all required dependencies, first install the necessary models.
+First, install all necessary dependencies by creating the environment,
+```conda env create -f environment.yaml```
+then installing additional libraries via pip
+```pip install -r requirements.txt```.
+
+Then, first install the necessary models.
 1. create `/models`
 2. install **[RealisticVision](https://civitai.com/models/4201?modelVersionId=130072)**, and put it under `/models/DreamBooth_LoRA`
 3. install `v3_sd15_adapter.ckpt` and `v3_sd15_mm.ckpt` from **[AnimateDiff](https://github.com/guoyww/AnimateDiff)**, and put it under `/models/Motion_Module`
